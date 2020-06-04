@@ -1,0 +1,39 @@
+import numpy as np
+import re
+import sys
+
+ref_path_run = "Ref/run/cesm_timing.scale.CMOM.T62_t061.64n.intel.2476837.chadmin1.ib0.cheyenne.ucar.edu.200529-131452"
+ref_path_test = "TestPass/run/cesm_timing.scale.CMOM.T62_t061.64n.intel.2476837.chadmin1.ib0.cheyenne.ucar.edu.200529-131452"
+
+def OceanRunTime(line):
+    result = re.findall("\d+\.\d+", line)
+    r = [0,0,0]
+    index = 0
+    for i in result:
+        r[index] = float(i)
+        index = index + 1
+    return r
+
+def findOceanRunTime(out):
+    f = open(out, "r")
+    text = f.read()
+    match = re.findall("\s+OCN Run Time:\s+\d+\.\d+\s+.+", text)
+    time = OceanRunTime(match[0])
+    return time
+
+refTime = findOceanRunTime(ref_path_run)
+
+testTime = findOceanRunTime(ref_path_test)
+
+speedup = np.divide(refTime, testTime)
+
+print("Ref Time: ", refTime[0], "seconds")
+print("Ref Time: ", refTime[1], "seconds/mday")
+print("Ref Time: ", refTime[2], "myears/wday")
+
+print("Test Time: ", testTime[0], "seconds")
+print("Test Time: ", testTime[1], "seconds/mday")
+print("Test TIme: ", testTime[2], "myears/wday")
+
+for i in speedup:
+    print("The test code has a", i, "x speedup compared to the reference")
